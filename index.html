@@ -3,245 +3,598 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>1981/09/12 專屬生命靈數與流年解析</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#FFC0CB', // 粉色主調
-                        secondary: '#FFF', // 白色
-                        accent: '#FFD700', // 金色
-                        crystal: '#F0F0F0', // 水晶色
-                        moon: '#E0E0E0', // 月光色
-                    },
-                    fontFamily: {
-                        sans: ['Noto Sans TC', 'sans-serif'],
-                    },
-                }
-            }
+    <title>週線VWAP分析工具</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-    </script>
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .content-auto {
-                content-visibility: auto;
+
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .input-section {
+            background: #f8fafc;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .input-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .input-group label {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        .input-group input {
+            padding: 12px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1.1em;
+            width: 200px;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        .analyze-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .analyze-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+        }
+
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            text-align: center;
+            border-left: 5px solid;
+        }
+
+        .metric-card.current { border-left-color: #4facfe; }
+        .metric-card.vwap { border-left-color: #ff6b6b; }
+        .metric-card.weekly { border-left-color: #feca57; }
+        .metric-card.close { border-left-color: #48dbfb; }
+
+        .metric-title {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .metric-change {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .positive { color: #27ae60; }
+        .negative { color: #e74c3c; }
+        .neutral { color: #7f8c8d; }
+
+        .analysis {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .analysis h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .analysis-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .analysis-icon {
+            font-size: 1.5em;
+            margin-right: 15px;
+            width: 30px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-top: 30px;
+            height: 500px;
+        }
+
+        .error {
+            background: #fee;
+            color: #c53030;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #c53030;
+        }
+
+        .disclaimer {
+            background: #fffbeb;
+            color: #92400e;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border-left: 5px solid #fbbf24;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2em;
             }
-            .bg-gradient-custom {
-                background: linear-gradient(135deg, #FFC0CB 0%, #FFF 100%);
+            
+            .content {
+                padding: 20px;
             }
-            .text-shadow {
-                text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+            
+            .input-group {
+                flex-direction: column;
             }
-            .card-shadow {
-                box-shadow: 0 10px 25px -5px rgba(255, 192, 203, 0.4);
-            }
-            .animate-float {
-                animation: float 3s ease-in-out infinite;
-            }
-            @keyframes float {
-                0% { transform: translateY(0px); }
-                50% { transform: translateY(-10px); }
-                100% { transform: translateY(0px); }
-            }
-            .border-gradient {
-                border-image: linear-gradient(to right, #FFC0CB, #FFD700) 1;
+            
+            .input-group input {
+                width: 100%;
             }
         }
     </style>
 </head>
-<body class="bg-gradient-custom min-h-screen font-sans text-gray-800">
-    <div class="container mx-auto px-4 py-8 max-w-4xl">
-        <!-- 頁首 -->
-        <header class="text-center mb-10">
-            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-pink-600 mb-2 animate-float">
-                <i class="fa fa-star text-accent mr-2"></i>專屬生命靈數解析
-            </h1>
-            <p class="text-[clamp(1.2rem,3vw,1.5rem)] text-gray-700">1981/09/12 | 2025 能量指引</p>
-            <div class="w-20 h-1 bg-gradient-to-r from-pink-500 to-yellow-400 mx-auto mt-4 rounded-full"></div>
-        </header>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 週線VWAP分析工具</h1>
+            <p>台股成交量加權平均價分析 - 幫助您判斷股價合理性</p>
+        </div>
 
-        <!-- 生命靈數部分 -->
-        <section class="bg-white rounded-2xl p-6 mb-8 card-shadow transform transition-all duration-500 hover:scale-[1.01]">
-            <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white text-xl font-bold mr-4">4</div>
-                <h2 class="text-2xl font-bold text-gray-800">生命靈數密碼：4</h2>
-            </div>
-            <p class="text-gray-700 leading-relaxed mb-4">
-                您的生命靈數是 4，象徵 <span class="font-bold text-pink-600">責任、基礎、穩定</span>。您天生擁有踏實務實的特質，善於建立穩固的基礎，但有時會因為過度追求完美而給自己太大壓力。2025年是你的 
-                <span class="font-bold italic text-pink-600">流年數 9</span>，這是一個收尾、總結與轉化的年份，代表要把不適合的能量（事業、人際、感情）清理掉，才能迎來新的開始。
-            </p>
-            <div class="flex justify-center mt-6">
-                <div class="w-40 h-1 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full"></div>
-            </div>
-        </section>
-
-        <!-- 流年密碼部分 -->
-        <section class="bg-white rounded-2xl p-6 mb-8 card-shadow transform transition-all duration-500 hover:scale-[1.01]">
-            <div class="flex items-center mb-4">
-                <div class="w-12 h-12 bg-yellow-400 rounded-full flex items-center justify-center text-white text-xl font-bold mr-4">9</div>
-                <h2 class="text-2xl font-bold text-gray-800">2025 流年密碼：9</h2>
-            </div>
-            <p class="text-gray-700 leading-relaxed mb-6">
-                2025 年是你的流年數 9，這是一個收尾、總結與轉化的年份，代表要把不適合的能量清理掉，才能迎來新的開始。
-            </p>
-            
-            <div class="bg-crystal rounded-xl p-4 border-l-4 border-pink-500 mb-4">
-                <h3 class="font-bold text-lg mb-2 text-pink-600">這一年，你最需要的就是：</h3>
-                <div class="space-y-2">
-                    <p class="text-gray-700">💰 <span class="font-bold">財運穩定</span> – 避免財務起伏，累積實質成果</p>
-                    <p class="text-gray-700">🛡 <span class="font-bold">防小人能量</span> – 保護自己不被負能量或小人干擾</p>
-                    <p class="text-gray-700">✨ <span class="font-bold">心靈平衡</span> – 放下過去的壓力，開啟全新局面</p>
+        <div class="content">
+            <div class="input-section">
+                <div class="input-group">
+                    <label for="stockCode">股票代號：</label>
+                    <input type="text" id="stockCode" placeholder="例如：2330" maxlength="10">
+                    <button class="analyze-btn" onclick="analyzeStock()">🔍 開始分析</button>
                 </div>
             </div>
-        </section>
 
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>正在獲取數據並分析中，請稍候...</p>
+            </div>
 
+            <div class="error" id="error" style="display: none;"></div>
 
-        <!-- 能量建議部分 -->
-        <section class="bg-white rounded-2xl p-6 mb-8 card-shadow">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                <i class="fa fa-lightbulb-o text-yellow-500 mr-3"></i>專屬能量建議
-            </h2>
-            
-            <!-- 佩戴建議 -->
-            <div class="mb-8">
-                <h3 class="text-xl font-bold text-pink-600 mb-4 flex items-center">
-                    <i class="fa fa-diamond text-pink-500 mr-2"></i>佩戴建議
-                </h3>
-                <div class="space-y-4">
-                    <div class="flex items-start">
-                        <div class="w-6 h-6 rounded-full bg-pink-200 flex items-center justify-center text-pink-600 mr-3 mt-1 flex-shrink-0">
-                            <i class="fa fa-hand-o-left text-xs"></i>
-                        </div>
-                        <p class="text-gray-700"><span class="font-bold">左手佩戴</span>：吸收能量、守護財運與人際和諧。</p>
-                    </div>
-                    <div class="flex items-start">
-                        <div class="w-6 h-6 rounded-full bg-pink-200 flex items-center justify-center text-pink-600 mr-3 mt-1 flex-shrink-0">
-                            <i class="fa fa-briefcase text-xs"></i>
-                        </div>
-                        <p class="text-gray-700"><span class="font-bold">重要場合佩戴</span>（如談合作、簽約、與人互動多的日子）：能量場會更集中，幫助你談事更順利。</p>
-                    </div>
+            <div class="results" id="results">
+                <div class="metrics" id="metrics"></div>
+                
+                <div class="analysis" id="analysis">
+                    <h3>📊 分析解讀</h3>
+                    <div id="analysisContent"></div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="priceChart"></canvas>
                 </div>
             </div>
-            
 
-            
-            <!-- 幸運顏色 -->
-            <div>
-                <h3 class="text-xl font-bold text-yellow-600 mb-4 flex items-center">
-                    <i class="fa fa-paint-brush text-yellow-500 mr-2"></i>今年幸運顏色
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-blue-100 rounded-lg p-4 border-2 border-blue-300">
-                        <div class="w-10 h-10 rounded-full bg-blue-500 mx-auto mb-2"></div>
-                        <h4 class="font-bold text-center text-blue-600">深藍色</h4>
-                        <p class="text-sm text-gray-700 text-center mt-1">穩定能量，增強判斷力與防護力。</p>
-                    </div>
-                    <div class="bg-yellow-100 rounded-lg p-4 border-2 border-yellow-300">
-                        <div class="w-10 h-10 rounded-full bg-yellow-400 mx-auto mb-2"></div>
-                        <h4 class="font-bold text-center text-yellow-600">金黃色</h4>
-                        <p class="text-sm text-gray-700 text-center mt-1">強化財運，提升自信與決策力。</p>
-                    </div>
-                    <div class="bg-gray-100 rounded-lg p-4 border-2 border-gray-300">
-                        <div class="w-10 h-10 rounded-full bg-white border border-gray-200 mx-auto mb-2"></div>
-                        <h4 class="font-bold text-center text-gray-600">純白色</h4>
-                        <p class="text-sm text-gray-700 text-center mt-1">清理負能量，重新開始的力量。</p>
-                    </div>
-                </div>
-                <p class="text-sm text-gray-600 mt-4 text-center">穿著或隨身帶著這些顏色的小物，也能提升您的好運能量。</p>
+            <div class="disclaimer">
+                <strong>⚠️ 投資警語：</strong> 
+                本工具提供的分析結果僅供參考，不構成投資建議。股票投資有風險，請根據自身財務狀況謹慎評估後再做決定。
             </div>
-        </section>
-
-        <!-- 關鍵字部分 - 修改內容 -->
-        <section class="bg-white rounded-2xl p-6 mb-8 card-shadow">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">🔥 2025 年你的流年關鍵字 🔥</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div class="bg-gradient-to-br from-blue-50 to-indigo-100 rounded-xl p-5 text-center transform transition-all duration-300 hover:scale-105">
-                    <div class="w-16 h-16 bg-blue-200 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <i class="fa fa-money text-blue-600 text-2xl"></i>
-                    </div>
-                    <h3 class="font-bold text-lg text-blue-700 mb-2">財運</h3>
-                    <p class="text-gray-700 text-sm">整合與收穫 – 穩定財務，為未來鋪路</p>
-                </div>
-                <div class="bg-gradient-to-br from-pink-50 to-red-100 rounded-xl p-5 text-center transform transition-all duration-300 hover:scale-105">
-                    <div class="w-16 h-16 bg-pink-200 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <i class="fa fa-shield text-pink-600 text-2xl"></i>
-                    </div>
-                    <h3 class="font-bold text-lg text-pink-700 mb-2">防小人</h3>
-                    <p class="text-gray-700 text-sm">清理不適合的人際關係，專注在真正支持你的人身上</p>
-                </div>
-                <div class="bg-gradient-to-br from-green-50 to-teal-100 rounded-xl p-5 text-center transform transition-all duration-300 hover:scale-105">
-                    <div class="w-16 h-16 bg-green-200 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <i class="fa fa-leaf text-green-600 text-2xl"></i>
-                    </div>
-                    <h3 class="font-bold text-lg text-green-700 mb-2">新生</h3>
-                    <p class="text-gray-700 text-sm">放下舊有壓力，迎來全新的轉化</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- 淨化建議部分 -->
-        <section class="bg-white rounded-2xl p-6 mb-8 card-shadow">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
-                <i class="fa fa-refresh text-purple-500 mr-3"></i>淨化建議
-            </h2>
-            <div class="space-y-4">
-                <div class="flex items-start">
-                    <div class="w-6 h-6 rounded-full bg-purple-200 flex items-center justify-center text-purple-600 mr-3 mt-1 flex-shrink-0">
-                        <i class="fa fa-moon-o text-xs"></i>
-                    </div>
-                    <p class="text-gray-700"><span class="font-bold">月光淨化</span>：在滿月或月光充足的夜晚放置窗邊一夜，特別適合流年數 9 的轉化能量。</p>
-                </div>
-                <div class="flex items-start">
-                    <div class="w-6 h-6 rounded-full bg-purple-200 flex items-center justify-center text-purple-600 mr-3 mt-1 flex-shrink-0">
-                        <i class="fa fa-diamond text-xs"></i>
-                    </div>
-                    <p class="text-gray-700"><span class="font-bold">白水晶碎淨化</span>：可放置在白水晶碎上 6～8 小時，幫助重置能量場。</p>
-                </div>
-                <div class="flex items-start">
-                    <div class="w-6 h-6 rounded-full bg-purple-200 flex items-center justify-center text-purple-600 mr-3 mt-1 flex-shrink-0">
-                        <i class="fa fa-fire text-xs"></i>
-                    </div>
-                    <p class="text-gray-700"><span class="font-bold">淨化頻率</span>：建議每 7～10 天淨化一次，在感覺能量沉重或經歷重要事件後也要及時淨化。</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- 尾聲 -->
-        <footer class="text-center py-6">
-            <p class="text-gray-600 italic">
-                <i class="fa fa-star text-yellow-400 mx-1"></i>
-                願您在 2025 年找到屬於自己的光與能量
-                <i class="fa fa-star text-yellow-400 mx-1"></i>
-            </p>
-            <div class="mt-6 flex justify-center space-x-4">
-                <div class="w-2 h-2 rounded-full bg-pink-400"></div>
-                <div class="w-2 h-2 rounded-full bg-purple-400"></div>
-                <div class="w-2 h-2 rounded-full bg-yellow-400"></div>
-                <div class="w-2 h-2 rounded-full bg-green-400"></div>
-                <div class="w-2 h-2 rounded-full bg-blue-400"></div>
-            </div>
-            <div class="mt-4 text-pink-600 font-bold">SiiS_Jewelry</div>
-            <p class="mt-2 text-gray-600">感謝您的信任，願我們的珠寶陪伴您踏上能量豐盛的旅程</p>
-        </footer>
+        </div>
     </div>
 
     <script>
-        // 添加页面载入动画
-        document.addEventListener('DOMContentLoaded', () => {
-            const sections = document.querySelectorAll('section');
-            sections.forEach((section, index) => {
-                section.style.opacity = '0';
-                section.style.transform = 'translateY(20px)';
-                setTimeout(() => {
-                    section.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-                    section.style.opacity = '1';
-                    section.style.transform = 'translateY(0)';
-                }, 100 * index);
+        let chart = null;
+
+        // 模擬數據生成函數（實際使用時應該接API）
+        function generateMockData(stockCode) {
+            const basePrice = Math.random() * 400 + 100;
+            const weeks = 12;
+            const data = [];
+            
+            for (let i = 0; i < weeks; i++) {
+                const weekStart = new Date();
+                weekStart.setDate(weekStart.getDate() - (weeks - i) * 7);
+                
+                const volatility = Math.random() * 0.1 - 0.05; // ±5%
+                const trend = Math.sin(i * 0.5) * 0.03; // 長期趨勢
+                
+                const open = basePrice * (1 + trend + volatility);
+                const close = open * (1 + (Math.random() * 0.08 - 0.04)); // ±4%
+                const high = Math.max(open, close) * (1 + Math.random() * 0.03);
+                const low = Math.min(open, close) * (1 - Math.random() * 0.03);
+                const volume = Math.random() * 50000 + 10000;
+                const turnover = (high + low + open + close) / 4 * volume;
+                
+                // 計算VWAP (簡化版)
+                const vwap = turnover / volume;
+                const weekAvgPrice = vwap * (1 + (Math.random() * 0.02 - 0.01));
+                
+                data.push({
+                    week: weekStart,
+                    open: Math.round(open * 100) / 100,
+                    high: Math.round(high * 100) / 100,
+                    low: Math.round(low * 100) / 100,
+                    close: Math.round(close * 100) / 100,
+                    volume: Math.round(volume),
+                    turnover: Math.round(turnover),
+                    vwap: Math.round(vwap * 100) / 100,
+                    weekAvgPrice: Math.round(weekAvgPrice * 100) / 100
+                });
+            }
+            
+            return data;
+        }
+
+        async function analyzeStock() {
+            const stockCode = document.getElementById('stockCode').value.trim();
+            
+            if (!stockCode) {
+                showError('請輸入股票代號');
+                return;
+            }
+
+            // 隱藏結果和錯誤
+            document.getElementById('results').classList.remove('show');
+            document.getElementById('error').style.display = 'none';
+            
+            // 顯示載入中
+            document.getElementById('loading').classList.add('show');
+            
+            try {
+                // 模擬API請求延遲
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // 生成模擬數據
+                const data = generateMockData(stockCode);
+                const latestWeek = data[data.length - 1];
+                const currentPrice = latestWeek.close * (1 + (Math.random() * 0.04 - 0.02));
+                
+                // 計算乖離率
+                const vwapDiff = ((currentPrice - latestWeek.vwap) / latestWeek.vwap * 100);
+                const weekCloseDiff = ((currentPrice - latestWeek.close) / latestWeek.close * 100);
+                const weekAvgDiff = ((currentPrice - latestWeek.weekAvgPrice) / latestWeek.weekAvgPrice * 100);
+                
+                // 顯示結果
+                displayResults({
+                    stockCode,
+                    currentPrice: Math.round(currentPrice * 100) / 100,
+                    latestWeek,
+                    vwapDiff,
+                    weekCloseDiff,
+                    weekAvgDiff,
+                    data
+                });
+                
+            } catch (error) {
+                showError('分析過程中發生錯誤，請稍後再試');
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        }
+
+        function displayResults(result) {
+            // 顯示指標卡片
+            displayMetrics(result);
+            
+            // 顯示分析內容
+            displayAnalysis(result);
+            
+            // 顯示圖表
+            displayChart(result);
+            
+            // 顯示結果區域
+            document.getElementById('results').classList.add('show');
+        }
+
+        function displayMetrics(result) {
+            const metricsContainer = document.getElementById('metrics');
+            
+            metricsContainer.innerHTML = `
+                <div class="metric-card current">
+                    <div class="metric-title">當前價格</div>
+                    <div class="metric-value">${result.currentPrice}</div>
+                    <div class="metric-change">元</div>
+                </div>
+                
+                <div class="metric-card vwap">
+                    <div class="metric-title">週線VWAP</div>
+                    <div class="metric-value">${result.latestWeek.vwap}</div>
+                    <div class="metric-change ${getChangeClass(result.vwapDiff)}">
+                        ${result.vwapDiff > 0 ? '+' : ''}${result.vwapDiff.toFixed(1)}%
+                    </div>
+                </div>
+                
+                <div class="metric-card weekly">
+                    <div class="metric-title">週均價</div>
+                    <div class="metric-value">${result.latestWeek.weekAvgPrice}</div>
+                    <div class="metric-change ${getChangeClass(result.weekAvgDiff)}">
+                        ${result.weekAvgDiff > 0 ? '+' : ''}${result.weekAvgDiff.toFixed(1)}%
+                    </div>
+                </div>
+                
+                <div class="metric-card close">
+                    <div class="metric-title">週收盤價</div>
+                    <div class="metric-value">${result.latestWeek.close}</div>
+                    <div class="metric-change ${getChangeClass(result.weekCloseDiff)}">
+                        ${result.weekCloseDiff > 0 ? '+' : ''}${result.weekCloseDiff.toFixed(1)}%
+                    </div>
+                </div>
+            `;
+        }
+
+        function displayAnalysis(result) {
+            const analysisContainer = document.getElementById('analysisContent');
+            const analyses = [];
+            
+            // VWAP分析
+            if (result.vwapDiff > 5) {
+                analyses.push({
+                    icon: '⚠️',
+                    text: '股價明顯高於週線VWAP，可能偏高，注意回調風險'
+                });
+            } else if (result.vwapDiff < -5) {
+                analyses.push({
+                    icon: '✅',
+                    text: '股價明顯低於週線VWAP，可能偏低，存在回升空間'
+                });
+            } else {
+                analyses.push({
+                    icon: 'ℹ️',
+                    text: '股價接近週線VWAP，相對合理價位'
+                });
+            }
+            
+            // 週收盤價分析
+            if (result.weekCloseDiff > 3) {
+                analyses.push({
+                    icon: '📈',
+                    text: '當前價格高於週收盤價，顯示週內走強'
+                });
+            } else if (result.weekCloseDiff < -3) {
+                analyses.push({
+                    icon: '📉',
+                    text: '當前價格低於週收盤價，顯示週內走弱'
+                });
+            } else {
+                analyses.push({
+                    icon: '➡️',
+                    text: '當前價格接近週收盤價，週內波動有限'
+                });
+            }
+            
+            analysisContainer.innerHTML = analyses.map(analysis => `
+                <div class="analysis-item">
+                    <div class="analysis-icon">${analysis.icon}</div>
+                    <div>${analysis.text}</div>
+                </div>
+            `).join('');
+        }
+
+        function displayChart(result) {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            const labels = result.data.slice(-8).map(d => 
+                d.week.toLocaleDateString('zh-TW', { month: 'short', day: 'numeric' })
+            );
+            
+            const recentData = result.data.slice(-8);
+            
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: '週收盤價',
+                            data: recentData.map(d => d.close),
+                            borderColor: '#4facfe',
+                            backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: '週線VWAP',
+                            data: recentData.map(d => d.vwap),
+                            borderColor: '#ff6b6b',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointBackgroundColor: '#ff6b6b'
+                        },
+                        {
+                            label: '週均價',
+                            data: recentData.map(d => d.weekAvgPrice),
+                            borderColor: '#feca57',
+                            backgroundColor: 'transparent',
+                            borderWidth: 2,
+                            borderDash: [2, 2],
+                            pointBackgroundColor: '#feca57'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `${result.stockCode} 週線價格趨勢`,
+                            font: { size: 16, weight: 'bold' }
+                        },
+                        legend: {
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: {
+                                display: true,
+                                text: '價格 (元)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: '日期'
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
             });
+        }
+
+        function getChangeClass(value) {
+            if (value > 0) return 'positive';
+            if (value < 0) return 'negative';
+            return 'neutral';
+        }
+
+        function showError(message) {
+            const errorElement = document.getElementById('error');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        // 按 Enter 鍵執行分析
+        document.getElementById('stockCode').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                analyzeStock();
+            }
+        });
+
+        // 頁面載入完成後自動聚焦到輸入框
+        window.addEventListener('load', function() {
+            document.getElementById('stockCode').focus();
         });
     </script>
 </body>
