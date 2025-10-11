@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AB轉折計算器</title>
+    <style>
+        /* 簡潔美觀的CSS */
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .input-group {
+            margin: 20px 0;
+        }
+        input {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            border: 2px solid #4CAF50;
+            border-radius: 8px;
+            background: #2a2a2a;
+            color: #fff;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+        .up { border-left-color: #f44336; }
+        .down { border-left-color: #2196F3; }
+    </style>
+</head>
+<body>
+    <h1>📊 AB轉折計算器</h1>
+    
+    <div class="input-group">
+        <label>A點（高點）：</label>
+        <input type="number" id="pointA" placeholder="輸入A點" step="0.1">
+    </div>
+    
+    <div class="input-group">
+        <label>B點（低點）：</label>
+        <input type="number" id="pointB" placeholder="輸入B點" step="0.1">
+    </div>
+    
+    <button onclick="calculate()">🔥 計算</button>
+    
+    <div id="results"></div>
+    
+    <script>
+        function calculate() {
+            const A = parseFloat(document.getElementById('pointA').value);
+            const B = parseFloat(document.getElementById('pointB').value);
+            
+            if (!A || !B) {
+                alert('請輸入A和B點！');
+                return;
+            }
+            
+            // 計算幾何級數
+            const C_up = (A * A) / B;
+            const D_up = (C_up * C_up) / A;
+            const E_up = (D_up * D_up) / C_up;
+            const F_up = (E_up * E_up) / D_up;
+            const G_up = (F_up * F_up) / E_up;
+            
+            const C_down = (B * B) / A;
+            const D_down = (C_down * C_down) / B;
+            const E_down = (D_down * D_down) / C_down;
+            const F_down = (E_down * E_down) / D_down;
+            const G_down = (F_down * F_down) / E_down;
+            
+            // 計算斐波那契扩展（假設B為回調點）
+            const fib_ext_618 = B + (A - B) * 0.618;
+            const fib_ext_100 = B + (A - B) * 1.0;
+            const fib_ext_1618 = B + (A - B) * 1.618;
+            const fib_ext_200 = B + (A - B) * 2.0;
+            const fib_ext_2618 = B + (A - B) * 2.618;
+            
+            // 計算價格通道（基於高低點的中軸和通道）
+            const mid_point = (A + B) / 2; // 中軸點
+            const channel_width = (A - B) * 0.2; // 通道寬度為價差的20%
+            const upper_channel = mid_point + channel_width; // 上通道線
+            const lower_channel = mid_point - channel_width; // 下通道線
+            
+            // 計算黃金切割
+            const diff = A - B;
+            const golden_up_1 = A + (diff * 0.191);
+            const golden_up_2 = A + (diff * 0.236);
+            const golden_up_3 = A + (diff * 0.382);
+            const golden_up_4 = A + (diff * 0.5);
+            const golden_up_5 = A + (diff * 0.618);
+            const golden_up_6 = A + (diff * 0.786);
+            
+            const golden_down_1 = B - (diff * 0.191);
+            const golden_down_2 = B - (diff * 0.236);
+            const golden_down_3 = B - (diff * 0.382);
+            const golden_down_4 = B - (diff * 0.5);
+            const golden_down_5 = B - (diff * 0.618);
+            const golden_down_6 = B - (diff * 0.786);
+            
+            // 收集所有計算出的價位
+            const allPrices = [
+                {name: 'C_up', value: C_up},
+                {name: 'D_up', value: D_up},
+                {name: 'E_up', value: E_up},
+                {name: 'F_up', value: F_up},
+                {name: 'G_up', value: G_up},
+                {name: 'C_down', value: C_down},
+                {name: 'D_down', value: D_down},
+                {name: 'E_down', value: E_down},
+                {name: 'F_down', value: F_down},
+                {name: 'G_down', value: G_down},
+                {name: 'golden_up_191', value: golden_up_1},
+                {name: 'golden_up_236', value: golden_up_2},
+                {name: 'golden_up_382', value: golden_up_3},
+                {name: 'golden_up_500', value: golden_up_4},
+                {name: 'golden_up_618', value: golden_up_5},
+                {name: 'golden_up_786', value: golden_up_6},
+                {name: 'golden_down_191', value: golden_down_1},
+                {name: 'golden_down_236', value: golden_down_2},
+                {name: 'golden_down_382', value: golden_down_3},
+                {name: 'golden_down_500', value: golden_down_4},
+                {name: 'golden_down_618', value: golden_down_5},
+                {name: 'golden_down_786', value: golden_down_6},
+                {name: 'fib_ext_618', value: fib_ext_618},
+                {name: 'fib_ext_100', value: fib_ext_100},
+                {name: 'fib_ext_1618', value: fib_ext_1618},
+                {name: 'fib_ext_200', value: fib_ext_200},
+                {name: 'fib_ext_2618', value: fib_ext_2618},
+                {name: 'mid_point', value: mid_point},
+                {name: 'upper_channel', value: upper_channel},
+                {name: 'lower_channel', value: lower_channel}
+            ];
+            
+            // 分析相近價位（相差在1%以內）
+            const similarPrices = [];
+            const threshold = Math.abs(diff) * 0.01; // 1%的價差作為閾值
+            
+            for (let i = 0; i < allPrices.length; i++) {
+                for (let j = i + 1; j < allPrices.length; j++) {
+                    const price1 = allPrices[i];
+                    const price2 = allPrices[j];
+                    const priceDiff = Math.abs(price1.value - price2.value);
+                    
+                    if (priceDiff <= threshold) {
+                        similarPrices.push({
+                            price1: {name: getPriceDisplayName(price1.name), value: price1.value},
+                            price2: {name: getPriceDisplayName(price2.name), value: price2.value},
+                            difference: priceDiff,
+                            differencePercent: (priceDiff / Math.min(price1.value, price2.value) * 100).toFixed(2)
+                        });
+                    }
+                }
+            }
+            
+            // 顯示結果
+            document.getElementById('results').innerHTML = `
+                <div class="result up">
+                    <h2>📈 往上壓力位（幾何級數）</h2>
+                    <p>C: ${C_up.toFixed(2)}</p>
+                    <p>D: ${D_up.toFixed(2)}</p>
+                    <p>E: ${E_up.toFixed(2)}</p>
+                    <p>F: ${F_up.toFixed(2)}</p>
+                    <p>G: ${G_up.toFixed(2)}</p>
+                </div>
+                
+                <div class="result" style="border-left-color: #FF9800;">
+                    <h2>📊 斐波那契扩展位</h2>
+                    <p>61.8%: ${fib_ext_618.toFixed(2)}</p>
+                    <p>100%: ${fib_ext_100.toFixed(2)}</p>
+                    <p>161.8%: ${fib_ext_1618.toFixed(2)}</p>
+                    <p>200%: ${fib_ext_200.toFixed(2)}</p>
+                    <p>261.8%: ${fib_ext_2618.toFixed(2)}</p>
+                    <p class="mt-2 text-sm text-gray-300">💡 基於A點（高點）和B點（回調點）計算</p>
+                </div>
+                
+                <div class="result" style="border-left-color: #9C27B0;">
+                    <h2>🛣️ 價格通道位</h2>
+                    <p>中軸點: ${mid_point.toFixed(2)}</p>
+                    <p>上通道線: ${upper_channel.toFixed(2)}</p>
+                    <p>下通道線: ${lower_channel.toFixed(2)}</p>
+                    <p class="mt-2 text-sm text-gray-300">💡 通道寬度為高低點價差的20%</p>
+                </div>
+                
+                <div class="result down">
+                    <h2>📉 往下支撐位（幾何級數）</h2>
+                    <p>C: ${C_down.toFixed(2)}</p>
+                    <p>D: ${D_down.toFixed(2)}</p>
+                    <p>E: ${E_down.toFixed(2)}</p>
+                    <p>F: ${F_down.toFixed(2)}</p>
+                    <p>G: ${G_down.toFixed(2)}</p>
+                </div>
+                
+                <div class="result up">
+                    <h2>🎯 黃金切割（往上）</h2>
+                    <p>0.191: ${golden_up_1.toFixed(2)}</p>
+                    <p>0.236: ${golden_up_2.toFixed(2)}</p>
+                    <p>0.382: ${golden_up_3.toFixed(2)}</p>
+                    <p>0.5: ${golden_up_4.toFixed(2)}</p>
+                    <p>0.618: ${golden_up_5.toFixed(2)}</p>
+                    <p>0.786: ${golden_up_6.toFixed(2)}</p>
+                </div>
+                
+                <div class="result down">
+                    <h2>🎯 黃金切割（往下）</h2>
+                    <p>0.191: ${golden_down_1.toFixed(2)}</p>
+                    <p>0.236: ${golden_down_2.toFixed(2)}</p>
+                    <p>0.382: ${golden_down_3.toFixed(2)}</p>
+                    <p>0.5: ${golden_down_4.toFixed(2)}</p>
+                    <p>0.618: ${golden_down_5.toFixed(2)}</p>
+                    <p>0.786: ${golden_down_6.toFixed(2)}</p>
+                </div>
+                
+                <div class="result" style="border-left-color: #9C27B0;">
+                    <h2>🔍 價位相近性分析</h2>
+                    ${similarPrices.length > 0 ? `
+                        <p>⚠️ 發現 <strong>${similarPrices.length}</strong> 組相近價位（相差在1%以內）：</p>
+                        <ul>
+                            ${similarPrices.map(pair => `
+                                <li>${pair.price1.name} (${pair.price1.value.toFixed(2)}) 與 ${pair.price2.name} (${pair.price2.value.toFixed(2)}) - 相差 ${pair.difference.toFixed(2)} (${pair.differencePercent}%)</li>
+                            `).join('')}
+                        </ul>
+                        <p class="mt-2">💡 <strong>分析建議：</strong> 這些相近的價位可能形成強大的支撐或壓力區域，值得特別關注。</p>
+                    ` : `
+                        <p>✅ 未發現相近的價位（相差在1%以內）。</p>
+                    `}
+                </div>
+                
+
+            `;
+        }
+        
+        // 輔助函數：獲取價位的顯示名稱
+        function getPriceDisplayName(priceKey) {
+            const nameMap = {
+                'C_up': '往上壓力位C',
+                'D_up': '往上壓力位D',
+                'E_up': '往上壓力位E',
+                'F_up': '往上壓力位F',
+                'G_up': '往上壓力位G',
+                'C_down': '往下支撐位C',
+                'D_down': '往下支撐位D',
+                'E_down': '往下支撐位E',
+                'F_down': '往下支撐位F',
+                'G_down': '往下支撐位G',
+                'golden_up_191': '黃金切割往上0.191',
+                'golden_up_236': '黃金切割往上0.236',
+                'golden_up_382': '黃金切割往上0.382',
+                'golden_up_500': '黃金切割往上0.5',
+                'golden_up_618': '黃金切割往上0.618',
+                'golden_up_786': '黃金切割往上0.786',
+                'golden_down_191': '黃金切割往下0.191',
+                'golden_down_236': '黃金切割往下0.236',
+                'golden_down_382': '黃金切割往下0.382',
+                'golden_down_500': '黃金切割往下0.5',
+                'golden_down_618': '黃金切割往下0.618',
+                'golden_down_786': '黃金切割往下0.786',
+                'fib_ext_618': '斐波那契扩展61.8%',
+                'fib_ext_100': '斐波那契扩展100%',
+                'fib_ext_1618': '斐波那契扩展161.8%',
+                'fib_ext_200': '斐波那契扩展200%',
+                'fib_ext_2618': '斐波那契扩展2618%',
+                'mid_point': '價格通道中軸點',
+                'upper_channel': '價格通道上軌',
+                'lower_channel': '價格通道下軌'
+            };
+            
+            return nameMap[priceKey] || priceKey;
+        }
+        
+        // 快捷鍵：按Enter計算
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculate();
+            }
+        });
+    </script>
+</body>
+</html>
