@@ -8,7 +8,7 @@
         /* 簡潔美觀的CSS */
         body {
             font-family: Arial, sans-serif;
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
             background: #1a1a1a;
@@ -16,6 +16,11 @@
         }
         .input-group {
             margin: 20px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #4CAF50;
         }
         input {
             width: 100%;
@@ -25,6 +30,7 @@
             border-radius: 8px;
             background: #2a2a2a;
             color: #fff;
+            box-sizing: border-box;
         }
         button {
             width: 100%;
@@ -35,6 +41,10 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #45a049;
         }
         .result {
             margin: 20px 0;
@@ -43,8 +53,33 @@
             border-radius: 8px;
             border-left: 4px solid #4CAF50;
         }
+        .result h2 {
+            margin-top: 0;
+            color: #4CAF50;
+        }
+        .result p {
+            margin: 8px 0;
+            font-size: 16px;
+        }
+        .result ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .result li {
+            margin: 5px 0;
+            font-size: 14px;
+        }
         .up { border-left-color: #f44336; }
         .down { border-left-color: #2196F3; }
+        .mt-2 {
+            margin-top: 10px;
+        }
+        .text-sm {
+            font-size: 14px;
+        }
+        .text-gray-300 {
+            color: #ccc;
+        }
     </style>
 </head>
 <body>
@@ -86,13 +121,6 @@
             const E_down = (D_down * D_down) / C_down;
             const F_down = (E_down * E_down) / D_down;
             const G_down = (F_down * F_down) / E_down;
-            
-            // 計算斐波那契扩展（假設B為回調點）
-            const fib_ext_618 = B + (A - B) * 0.618;
-            const fib_ext_100 = B + (A - B) * 1.0;
-            const fib_ext_1618 = B + (A - B) * 1.618;
-            const fib_ext_200 = B + (A - B) * 2.0;
-            const fib_ext_2618 = B + (A - B) * 2.618;
             
             // 計算價格通道（基於高低點的中軸和通道）
             const mid_point = (A + B) / 2; // 中軸點
@@ -140,11 +168,6 @@
                 {name: 'golden_down_500', value: golden_down_4},
                 {name: 'golden_down_618', value: golden_down_5},
                 {name: 'golden_down_786', value: golden_down_6},
-                {name: 'fib_ext_618', value: fib_ext_618},
-                {name: 'fib_ext_100', value: fib_ext_100},
-                {name: 'fib_ext_1618', value: fib_ext_1618},
-                {name: 'fib_ext_200', value: fib_ext_200},
-                {name: 'fib_ext_2618', value: fib_ext_2618},
                 {name: 'mid_point', value: mid_point},
                 {name: 'upper_channel', value: upper_channel},
                 {name: 'lower_channel', value: lower_channel}
@@ -183,13 +206,13 @@
                 </div>
                 
                 <div class="result" style="border-left-color: #FF9800;">
-                    <h2>📊 斐波那契扩展位</h2>
-                    <p>61.8%: ${fib_ext_618.toFixed(2)}</p>
-                    <p>100%: ${fib_ext_100.toFixed(2)}</p>
-                    <p>161.8%: ${fib_ext_1618.toFixed(2)}</p>
-                    <p>200%: ${fib_ext_200.toFixed(2)}</p>
-                    <p>261.8%: ${fib_ext_2618.toFixed(2)}</p>
-                    <p class="mt-2 text-sm text-gray-300">💡 基於A點（高點）和B點（回調點）計算</p>
+                    <h2>📊 斐波那契計算器</h2>
+                    <iframe frameborder="0" scrolling="auto" height="650" width="100%" allowtransparency="true" marginwidth="0" marginheight="0" src="https://ssltools.investing.com/fibonacci-calculator/index.php?force_lang=6"></iframe>
+                    <div style="width:100%; margin-top:10px;">
+                        <span style="font-size: 11px;color: #999;text-decoration: none;">
+                            斐波那契计算器由 <a href="https://cn.investing.com/" rel="nofollow" target="_blank" style="font-size: 11px;color: #4CAF50; font-weight: bold;" class="underline_link">Investing.com 中文站</a> 提供。
+                        </span>
+                    </div>
                 </div>
                 
                 <div class="result" style="border-left-color: #9C27B0;">
@@ -243,8 +266,6 @@
                         <p>✅ 未發現相近的價位（相差在1%以內）。</p>
                     `}
                 </div>
-                
-
             `;
         }
         
@@ -273,11 +294,6 @@
                 'golden_down_500': '黃金切割往下0.5',
                 'golden_down_618': '黃金切割往下0.618',
                 'golden_down_786': '黃金切割往下0.786',
-                'fib_ext_618': '斐波那契扩展61.8%',
-                'fib_ext_100': '斐波那契扩展100%',
-                'fib_ext_1618': '斐波那契扩展161.8%',
-                'fib_ext_200': '斐波那契扩展200%',
-                'fib_ext_2618': '斐波那契扩展2618%',
                 'mid_point': '價格通道中軸點',
                 'upper_channel': '價格通道上軌',
                 'lower_channel': '價格通道下軌'
